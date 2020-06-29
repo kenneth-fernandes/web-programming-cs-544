@@ -130,6 +130,14 @@ function segment(meta, path, $element) {
 
 
 function submit(meta, path, $element) {
+    //Code added - For displaying the Submit button
+    const divElem = makeElement('div');
+    $element.append(divElem);
+    const attr = Object.assign({}, meta.attr,
+      { type: 'submit', text: 'Submit' });
+    const buttonElem = makeElement('button', attr)
+      .text(meta.text ? meta.text : attr.text);
+    $element.append(buttonElem);
 }
 
 function uniSelect(meta, path, $element) {
