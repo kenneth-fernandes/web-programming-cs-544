@@ -25,7 +25,7 @@ function makeRefUrl(ref) {
 }
 
 /** Return a jquery-wrapped element for tag and attr */
-function makeElement(tag, attr={}) {
+function makeElement(tag, attr = {}) {
   const $e = $(`<${tag}/>`);
   Object.entries(attr).forEach(([k, v]) => $e.attr(k, v));
   return $e;
@@ -87,7 +87,7 @@ function block(meta, path, $element) { items('div', meta, path, $element); }
 
 function form(meta, path, $element) {
   const $form = items('form', meta, path, $element);
-  $form.submit(function(event) {
+  $form.submit(function (event) {
     event.preventDefault();
     const $form = $(this);
     //@TODO
@@ -108,8 +108,8 @@ function input(meta, path, $element) {
 
 function link(meta, path, $element) {
   const parentType = getType(access(path.concat('..')));
-  const { text='', ref=DEFAULT_REF } = meta;
-  const attr = Object.assign({}, meta.attr||{}, { href: makeRefUrl(ref) });
+  const { text = '', ref = DEFAULT_REF } = meta;
+  const attr = Object.assign({}, meta.attr || {}, { href: makeRefUrl(ref) });
   $element.append(makeElement('a', attr).text(text));
 }
 
@@ -130,7 +130,6 @@ function segment(meta, path, $element) {
 
 
 function submit(meta, path, $element) {
-  //@TODO
 }
 
 function uniSelect(meta, path, $element) {
@@ -154,7 +153,7 @@ const FNS = {
 
 /*************************** Top-Level Code ****************************/
 
-function render(path, $element=$('body')) {
+function render(path, $element = $('body')) {
   const meta = access(path);
   if (!meta) {
     $element.append(`<p>Path ${makeId(path)} not found</p>`);
@@ -173,7 +172,7 @@ function render(path, $element=$('body')) {
 
 function go() {
   const ref = getRef() || DEFAULT_REF;
-  render([ ref ]);
+  render([ref]);
 }
 
 go();
