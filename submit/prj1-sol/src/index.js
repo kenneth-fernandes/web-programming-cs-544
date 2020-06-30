@@ -103,7 +103,19 @@ function header(meta, path, $element) {
 }
 
 function input(meta, path, $element) {
-  //@TODO
+  const inputLabel = meta.required ? meta.text + '*' : meta.text;
+  const attr = meta.attr ? meta.attr : {};
+  const id = attr.hasOwnProperty('id') ? attr.id : makeId(path);
+  $element.append(makeElement('label', { for: id }).text(inputLabel));
+  const divElem = makeElement('div');
+  if (meta.hasOwnProperty('subType') && meta.subType === "textarea") {
+    divElem.append(makeElement('textarea', attr));
+  } else {
+    const type = meta.hasOwnProperty('subType') ? meta.subType : 'text';
+    divElem.append(makeElement('input',
+      Object.assign({}, attr, { id: id, type: type })));
+  }
+  $element.append(divElem.append(makeElement('div', { class: 'error', id: id })));
 }
 
 function link(meta, path, $element) {
@@ -130,14 +142,14 @@ function segment(meta, path, $element) {
 
 
 function submit(meta, path, $element) {
-    //Code added - For displaying the Submit button
-    const divElem = makeElement('div');
-    $element.append(divElem);
-    const attr = Object.assign({}, meta.attr,
-      { type: 'submit', text: 'Submit' });
-    const buttonElem = makeElement('button', attr)
-      .text(meta.text ? meta.text : attr.text);
-    $element.append(buttonElem);
+  //Code added - For displaying the Submit button
+  const divElem = makeElement('div');
+  $element.append(divElem);
+  const attr = Object.assign({}, meta.attr,
+    { type: 'submit', text: 'Submit' });
+  const buttonElem = makeElement('button', attr)
+    .text(meta.text ? meta.text : attr.text);
+  $element.append(buttonElem);
 }
 
 function uniSelect(meta, path, $element) {
