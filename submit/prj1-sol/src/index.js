@@ -126,7 +126,43 @@ function link(meta, path, $element) {
 }
 
 function multiSelect(meta, path, $element) {
-  //@TODO
+  if (meta.items.length >
+    (access(['_options']).N_UNI_SELECT || N_UNI_SELECT)) {
+    console.log(meta);
+
+    const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
+
+    $element.append(makeElement('label', { for: id }).text(inputLabel));
+    const $divElem = makeElement('div');
+
+    const $selectBlckElem = makeElement('select',
+      { name: attr.name, multiple: 'multiple' });
+
+    optionItems(meta.items, $selectBlckElem);
+    $divElem.append($selectBlckElem)
+
+
+    $element.append($divElem.append(makeElement('div',
+      { class: 'error', id: id + '-err' })));
+
+
+  } else {
+    console.log(meta);
+    const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
+
+    $element.append(makeElement('label', { for: id }).text(inputLabel));
+    const $divElem = makeElement('div');
+
+    const $fieldSetBlockElem = makeElement('div', { class: 'fieldset' });
+    inputItems(meta.items, 'checkbox', id, attr, $fieldSetBlockElem);
+
+    $divElem.append($fieldSetBlockElem);
+    $divElem.append(makeElement('div',
+      { class: 'error', id: id + '-err' }));
+
+    $element.append($divElem);
+
+  }
 }
 
 function para(meta, path, $element) { items('p', meta, path, $element); }
@@ -159,10 +195,14 @@ function optionItems(items, $elem) {
 }
 
 function inputItems(items, type, id, attr, $elem) {
-  items.forEach((item) => {
-    const itemAttr = Object.assign({}, attr,
-      { for: id, value: item['key'], type: type });
-    $elem.append(makeElement('label', { for: id }).text(item['key']));
+  items.forEach((item, index) => {
+    const itemAttr = Object.assign({},
+      {
+        name: attr.name, id: id + '-' + index,
+        value: item['key'], type: type
+      });
+    $elem.append(makeElement('label',
+      { for: id }).text(item['key']));
     $elem.append(makeElement('input', itemAttr));
   });
 }
