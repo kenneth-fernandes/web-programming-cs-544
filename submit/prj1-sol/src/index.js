@@ -152,8 +152,63 @@ function submit(meta, path, $element) {
   $element.append(buttonElem);
 }
 
+function optionItems(items, $elem) {
+  items.forEach((item, index) => {
+    $elem.append(makeElement('option', { value: item['key'] }).text(item['text']));
+  });
+}
+
+function inputItems(items, type, id, attr, $elem) {
+  items.forEach((item) => {
+    const itemAttr = Object.assign({}, attr,
+      { for: id, value: item['key'], type: type });
+    $elem.append(makeElement('label', { for: id }).text(item['key']));
+    $elem.append(makeElement('input', itemAttr));
+  });
+}
+
+function initializeElemAttribs(meta, path) {
+  const id = meta.attr.hasOwnProperty('id') ? meta.attr.id : makeId(path);
+  return [id,
+    Object.assign({}, meta.attr, { for: id }),
+    meta.required ? meta.text + '*' : meta.text];
+}
+
 function uniSelect(meta, path, $element) {
-  //@TODO
+  if (meta.items.length >
+    (access(['_options']).N_UNI_SELECT || N_UNI_SELECT)) {
+
+    const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
+
+    $element.append(makeElement('label', { for: id }).text(inputLabel));
+    const $divElem = makeElement('div');
+
+    const $selectBlckElem = makeElement('select', { name: attr.name });
+
+    optionItems(meta.items, $selectBlckElem);
+    $divElem.append($selectBlckElem)
+
+
+    $element.append($divElem.append(makeElement('div',
+      { class: 'error', id: id + '-err' })));
+
+
+  } else {
+    const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
+
+    $element.append(makeElement('label', { for: id }).text(inputLabel));
+    const $divElem = makeElement('div');
+
+    const $fieldSetBlockElem = makeElement('div', { class: 'fieldset' });
+    inputItems(meta.items, 'radio', id, attr, $fieldSetBlockElem);
+
+    $divElem.append($fieldSetBlockElem);
+    $divElem.append(makeElement('div',
+      { class: 'error', id: id + '-err' }));
+
+    $element.append($divElem);
+
+  }
 }
 
 
