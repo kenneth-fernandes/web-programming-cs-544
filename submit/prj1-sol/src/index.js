@@ -90,9 +90,20 @@ function form(meta, path, $element) {
   $form.submit(function (event) {
     event.preventDefault();
     const $form = $(this);
-    //@TODO
-    // const results = ...;
-    // console.log(JSON.stringify(results, null, 2));
+    const serializedArrForm = ($form.serializeArray());
+    const results = serializedArrForm.reduce((acc, item) => {
+      if (item.name === "multiSelect"
+        || item.name === "primaryColors") {
+        acc[item.name] = acc.hasOwnProperty(item.name)
+          ? acc[item.name] : [];
+        acc[item.name].push(item.value);
+      }
+      else {
+        acc[item.name] = item.value;
+      }
+      return acc;
+    }, {});
+    console.log(JSON.stringify(results, null, 2));
   });
 }
 
@@ -128,7 +139,6 @@ function link(meta, path, $element) {
 function multiSelect(meta, path, $element) {
   if (meta.items.length >
     (access(['_options']).N_UNI_SELECT || N_UNI_SELECT)) {
-    console.log(meta);
 
     const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
 
@@ -147,7 +157,6 @@ function multiSelect(meta, path, $element) {
 
 
   } else {
-    console.log(meta);
     const [id, attr, inputLabel] = initializeElemAttribs(meta, path);
 
     $element.append(makeElement('label', { for: id }).text(inputLabel));
