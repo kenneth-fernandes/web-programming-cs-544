@@ -70,7 +70,55 @@ function items(tag, meta, path, $element) {
 
 /************************** Event Handlers *****************************/
 
-//@TODO
+function setEventHandler(meta, $elem, id, event) {
+  const { chkFn: chkFn,
+    errMsgFn: errMsgFn,
+    attr: attr, required: isRequired,
+    type: type, text: text } = meta;
+
+  if (chkFn !== undefined || isRequired) {
+    $elem.on(event, function () {
+      const errMsgFunc = errMsgFn !== undefined ?
+        (val, info) => { return errMsgFn(val, info); } :
+        (val, info) => { return 'invalid value' + val; }
+
+      if (type === 'multiSelect' &&
+        $(this).children('input').attr('type') === 'checkbox') {
+        const values = Array.from(
+          $(`input[name=${attr.name}]:checked`)
+        ).map(function (item) {
+          return item.value;
+        });
+
+        const errMsg = values.length !== 0 ?
+          '' :
+          `The field ${meta.text} must be specified`;
+
+        const errElemId = (id + '-err')
+          .replace(/([^a-zA-Z0-9 ])/g, '\\$1');
+
+        $('#' + errElemId).text(errMsg);
+
+      } else {
+        const value = $(this).val().trim();
+
+        const errMsg = value.length !== 0 ?
+          function (val) {
+            return (chkFn !== undefined ? chkFn(val) : true) ?
+              '' :
+              errMsgFunc(val, meta);
+          }(value) :
+          `The field ${meta.text} must be specified`;
+
+        const errElemId = (id + '-err')
+          .replace(/([^a-zA-Z0-9 ])/g, '\\$1');
+
+        $('#' + errElemId).text(errMsg);
+      }
+    });
+
+  }
+}
 
 /********************** Type Routine Common Handling *******************/
 
@@ -90,20 +138,34 @@ function form(meta, path, $element) {
   $form.submit(function (event) {
     event.preventDefault();
     const $form = $(this);
-    const serializedArrForm = ($form.serializeArray());
-    const results = serializedArrForm.reduce((acc, item) => {
-      if (item.name === "multiSelect"
-        || item.name === "primaryColors") {
-        acc[item.name] = acc.hasOwnProperty(item.name)
-          ? acc[item.name] : [];
-        acc[item.name].push(item.value);
-      }
-      else {
-        acc[item.name] = item.value;
+    $('input,select,textarea', $form).trigger('blur');
+    $('input,select', $form).trigger('change');
+
+    const isErrorPresent = Array.from($('.error')).reduce((acc, item) => {
+      if (item.innerText.trim().length > 0) {
+        acc = true;
       }
       return acc;
-    }, {});
-    console.log(JSON.stringify(results, null, 2));
+    }, false);
+    
+    if (!isErrorPresent) {
+      const serializedArrForm = ($form.serializeArray());
+      const results = serializedArrForm.reduce((acc, item) => {
+        if (item.name === "multiSelect"
+          || item.name === "primaryColors") {
+          acc[item.name] = acc.hasOwnProperty(item.name)
+            ? acc[item.name] : [];
+          acc[item.name].push(item.value);
+        }
+        else {
+          acc[item.name] = item.value;
+        }
+        return acc;
+      }, {});
+      console.log(JSON.stringify(results, null, 2));
+    }
+
+
   });
 }
 
@@ -117,16 +179,20 @@ function input(meta, path, $element) {
   const inputLabel = meta.required ? meta.text + '*' : meta.text;
   const attr = meta.attr ? meta.attr : {};
   const id = attr.hasOwnProperty('id') ? attr.id : makeId(path);
+
   $element.append(makeElement('label', { for: id }).text(inputLabel));
   const divElem = makeElement('div');
-  if (meta.hasOwnProperty('subType') && meta.subType === "textarea") {
+
+  if (meta.hasOwnProperty('subType') && meta.subType === 'textarea') {
     divElem.append(makeElement('textarea', attr));
   } else {
     const type = meta.hasOwnProperty('subType') ? meta.subType : 'text';
     divElem.append(makeElement('input',
       Object.assign({}, attr, { id: id, type: type })));
   }
-  $element.append(divElem.append(makeElement('div', { class: 'error', id: id })));
+  setEventHandler(meta, divElem.children(), id, 'blur');
+  $element.append(divElem.append(
+    makeElement('div', { class: 'error', id: id + '-err' })));
 }
 
 function link(meta, path, $element) {
@@ -149,6 +215,7 @@ function multiSelect(meta, path, $element) {
       { name: attr.name, multiple: 'multiple' });
 
     optionItems(meta.items, $selectBlckElem);
+    setEventHandler(meta, $selectBlckElem, id, 'change');
     $divElem.append($selectBlckElem)
 
 
@@ -165,7 +232,10 @@ function multiSelect(meta, path, $element) {
     const $fieldSetBlockElem = makeElement('div', { class: 'fieldset' });
     inputItems(meta.items, 'checkbox', id, attr, $fieldSetBlockElem);
 
+    setEventHandler(meta, $fieldSetBlockElem, id, 'change');
+
     $divElem.append($fieldSetBlockElem);
+
     $divElem.append(makeElement('div',
       { class: 'error', id: id + '-err' }));
 
@@ -235,6 +305,9 @@ function uniSelect(meta, path, $element) {
     const $selectBlckElem = makeElement('select', { name: attr.name });
 
     optionItems(meta.items, $selectBlckElem);
+
+    setEventHandler(meta, $selectBlckElem, id, 'change');
+
     $divElem.append($selectBlckElem)
 
 
@@ -250,6 +323,8 @@ function uniSelect(meta, path, $element) {
 
     const $fieldSetBlockElem = makeElement('div', { class: 'fieldset' });
     inputItems(meta.items, 'radio', id, attr, $fieldSetBlockElem);
+
+    setEventHandler(meta, $fieldSetBlockElem, id, 'change');
 
     $divElem.append($fieldSetBlockElem);
     $divElem.append(makeElement('div',
