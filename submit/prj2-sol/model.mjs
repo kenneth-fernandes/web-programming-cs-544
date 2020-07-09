@@ -65,21 +65,27 @@ export default class Model {
 
   /** Return a new instance of Model set up to use database specified
    *  by dbUrl
-   */ 
+   */
   static async make(dbUrl) {
     let client;
     try {
-      //@TODO
+      const [dbName, mongoUrl] =
+        [dbUrl.slice(dbUrl.lastIndexOf("\/") + 1),
+        dbUrl.slice(0, dbUrl.lastIndexOf("\/"))];
+
+      client = await mongo.connect(mongoUrl, MONGO_CONNECT_OPTIONS);
+      const db = client.db(dbName);
       const props = {
-	validator: new Validator(META),
-	//@TODO other properties
+        validator: new Validator(META),
+        client: client,
+        //@Todo- other props
       };
       const model = new Model(props);
       return model;
     }
     catch (err) {
       const msg = `cannot connect to URL "${dbUrl}": ${err}`;
-      throw [ new ModelError('DB', msg) ];
+      throw [new ModelError('DB', msg)];
     }
   }
 
@@ -87,14 +93,19 @@ export default class Model {
    *  close any database connections.
    */
   async close() {
-    //@TODO
+    try {
+      await this.client.close();
+    } catch (error) {
+      const msg = 'Cannot close the DB';
+      throw [new ModelError('DB', msg)];
+    }
   }
 
   /** Clear out all data stored within this model. */
   async clear() {
     //@TODO
   }
-  
+
   //Action routines
 
   /** Create a new cart.  Returns ID of newly created cart.  The
@@ -122,7 +133,7 @@ export default class Model {
     const nameValues = this._validate('cartItem', rawNameValues);
     //@TODO
   }
-  
+
   /** Given fields { cartId } = nameValues, return cart identified by
    *  cartId.  The cart is returned as an object which contains a
    *  mapping from SKU's to *positive* integers (representing the
@@ -183,10 +194,10 @@ export default class Model {
     }
     catch (err) {
       if (err instanceof Array) { //something we understand
-	errs = err;
+        errs = err;
       }
       else {
-	throw err; //not expected, throw upstairs
+        throw err; //not expected, throw upstairs
       }
     }
     if (rawNameValues._id !== undefined) {
@@ -195,8 +206,8 @@ export default class Model {
     if (errs.length > 0) throw errs;
     return nameValues;
   }
-  
-  
+
+
 };
 
 //use as second argument to mongo.connect()
