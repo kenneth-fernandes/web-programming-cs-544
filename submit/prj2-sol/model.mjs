@@ -176,11 +176,14 @@ export default class Model {
       $set: updateFields,
       $currentDate: lastModified,
     });
+
     if (result.modifiedCount !== 1) {
       const msg = `unknown sku ${sku}`;
       throw [new ModelError('BAD_ID', msg, 'sku')];
 
     }
+
+
   }
 
   /** Given fields { cartId } = nameValues, return cart identified by
@@ -195,9 +198,30 @@ export default class Model {
    *    BAD_ID: cartId does not reference a cart.
    */
   async getCart(rawNameValues) {
+
     const nameValues = this._validate('getCart', rawNameValues);
+
+    const lastModified = Object.assign({}, { _lastModified: true });
+    const shoppingCartRes = await this.shoppingCart.find({}).toArray();
+    await shoppingCartRes.forEach(async (element) => {
+      for (const key in element) {
+        if (element.hasOwnProperty(key)
+          && !(key === 'cartId' || key === '_id')) {
+          if (element[key] <= 0) {
+            await this.shoppingCart.updateOne(
+              { cartId: element['cartId'] }, {
+              $currentDate: lastModified, $unset: { [key]: element[key] }
+            });
+          }
+        }
+      }
+      return element;
+    });
+    // Not able to exclude _id and cartId from the object
+    const results = await this.shoppingCart.findOne(
+      nameValues, { _id: 0, cartId: 0 });
     //@TODO
-    return await this.shoppingCart.find({}).toArray();
+    return results;
   }
 
   /** Given fields { isbn, title, authors, publisher, year, pages } =
