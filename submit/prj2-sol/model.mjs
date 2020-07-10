@@ -237,8 +237,11 @@ export default class Model {
    */
   async addBook(rawNameValues) {
     const nameValues = this._validate('addBook', rawNameValues);
-    console.log(nameValues);
+    const result = await this.bookCatalog.updateOne({title:""},{$set: nameValues}, {upsert: true});
     //@TODO
+    // - Check all functions have try-catch
+    //
+    //console.log(await this.bookCatalog.find({}).toArray());
   }
 
   /** Given fields { isbn, authorsTitle, _count=COUNT, _index=0 } =
@@ -255,7 +258,7 @@ export default class Model {
   async findBooks(rawNameValues) {
     const nameValues = this._validate('findBooks', rawNameValues);
     //@TODO
-    return [];
+    return console.log(await this.bookCatalog.find({}).toArray());
   }
 
   //wrapper around this.validator to verify that no external field
