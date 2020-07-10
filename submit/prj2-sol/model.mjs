@@ -69,15 +69,26 @@ export default class Model {
   static async make(dbUrl) {
     let client;
     try {
+      // Retrieving DB-Name and MongoUrl from the dbUrl
       const [dbName, mongoUrl] =
         [dbUrl.slice(dbUrl.lastIndexOf("\/") + 1),
         dbUrl.slice(0, dbUrl.lastIndexOf("\/"))];
 
+      // Creating the client object after establishing connection to mongo
       client = await mongo.connect(mongoUrl, MONGO_CONNECT_OPTIONS);
+      // Creating Database
       const db = client.db(dbName);
+      // Collections of Book_Catalog and Shopping_cart
+      const bookCatalogColln = db.collection(BOOK_CATALOG_TABLE);
+      const shoppingCartColln = db.collection(SHOPPING_CART_TABLE);
+
+      // Updated props object wotj client, db, bookCatalog, shoppingCart
       const props = {
         validator: new Validator(META),
         client: client,
+        db: db,
+        bookCatalog: bookCatalogColln,
+        shoppingCart: shoppingCartColln,
         //@Todo- other props
       };
       const model = new Model(props);
@@ -93,17 +104,28 @@ export default class Model {
    *  close any database connections.
    */
   async close() {
+    // Close connection to mongoDb
     try {
       await this.client.close();
     } catch (error) {
-      const msg = 'Cannot close the DB';
+      const msg = `Error while closing connection to \
+       DB "${this.db.databaseName}": ${error}`;
       throw [new ModelError('DB', msg)];
     }
   }
 
   /** Clear out all data stored within this model. */
   async clear() {
-    //@TODO
+    // Clear DB collection contents
+    try {
+      await this.bookCatalog.deleteMany({});
+      await this.shoppingCart.deleteMany({});
+
+    } catch (error) {
+      const msg = `Error while clearing the conetnts \
+      in collection ": ${error}`;
+      throw [new ModelError('DB-Collection', msg)];
+    }
   }
 
   //Action routines
@@ -164,6 +186,7 @@ export default class Model {
    */
   async addBook(rawNameValues) {
     const nameValues = this._validate('addBook', rawNameValues);
+    console.log(nameValues);
     //@TODO
   }
 
@@ -217,3 +240,6 @@ const MONGO_CONNECT_OPTIONS = { useUnifiedTopology: true };
 const COUNT = 5;
 
 //define private constants and functions here.
+const BOOK_CATALOG_TABLE = 'Book_Catalog';
+
+const SHOPPING_CART_TABLE = 'Shopping_Cart';
