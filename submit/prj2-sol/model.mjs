@@ -202,26 +202,37 @@ export default class Model {
     const nameValues = this._validate('getCart', rawNameValues);
 
     const lastModified = Object.assign({}, { _lastModified: true });
-    const shoppingCartRes = await this.shoppingCart.find({}).toArray();
-    await shoppingCartRes.forEach(async (element) => {
-      for (const key in element) {
-        if (element.hasOwnProperty(key)
-          && !(key === 'cartId' || key === '_id')) {
-          if (element[key] <= 0) {
-            await this.shoppingCart.updateOne(
-              { cartId: element['cartId'] }, {
-              $currentDate: lastModified, $unset: { [key]: element[key] }
-            });
+    try {
+
+      const shoppingCartRes = await this.shoppingCart.find({}).toArray();
+      await shoppingCartRes.forEach(async (element) => {
+        for (const key in element) {
+          if (element.hasOwnProperty(key)
+            && !(key === 'cartId' || key === '_id')) {
+            if (element[key] <= 0) {
+              await this.shoppingCart.updateOne(
+                { cartId: element['cartId'] }, {
+                $currentDate: lastModified, $unset: { [key]: element[key] }
+              });
+            }
           }
         }
-      }
-      return element;
-    });
-    // Not able to exclude _id and cartId from the object
-    const results = await this.shoppingCart.findOne(
-      nameValues, { _id: 0, cartId: 0 });
-    //@TODO
-    return results;
+        return element;
+      });
+
+      const results = await this.shoppingCart.findOne(
+        nameValues, {
+          projection:
+            { _id: 0, cartId: 0 }
+      });
+
+      return results;
+    }
+    catch (error) {
+      const msg = `Error while retrieving record to shopping_cart ": ${error}`;
+      throw [new ModelError('retrieve-getCart', msg)];
+    }
+
   }
 
   /** Given fields { isbn, title, authors, publisher, year, pages } =
@@ -237,11 +248,18 @@ export default class Model {
    */
   async addBook(rawNameValues) {
     const nameValues = this._validate('addBook', rawNameValues);
-    const result = await this.bookCatalog.updateOne({title:""},{$set: nameValues}, {upsert: true});
+    const lastModified = Object.assign({}, { _lastModified: true });
+    const result = await this.bookCatalog.updateOne({ title: "" },
+      {
+        $set: nameValues,
+        $currentDate: lastModified,
+      }, { upsert: true });
     //@TODO
     // - Check all functions have try-catch
     //
     //console.log(await this.bookCatalog.find({}).toArray());
+
+    return result;
   }
 
   /** Given fields { isbn, authorsTitle, _count=COUNT, _index=0 } =
