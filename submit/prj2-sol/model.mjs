@@ -122,7 +122,7 @@ export default class Model {
       await this.shoppingCart.deleteMany({});
 
     } catch (error) {
-      const msg = `Error while clearing the conetnts \
+      const msg = `Error while clearing the contents \
       in collection ": ${error}`;
       throw [new ModelError('DB-Collection', msg)];
     }
@@ -139,8 +139,16 @@ export default class Model {
    */
   async newCart(rawNameValues) {
     const nameValues = this._validate('newCart', rawNameValues);
+    const cartId = Math.random().toString();
     //@TODO
-    return '@TODO';
+    try {
+
+      await this.shoppingCart.insertOne({ cartId: cartId });
+    } catch (error) {
+      const msg = `Error while adding record to shopping_cart ": ${error}`;
+      throw [new ModelError('insert-newCart', msg)];
+    }
+    return cartId;
   }
 
   /** Given fields { cartId, sku, nUnits } = rawNameValues, update
@@ -153,7 +161,26 @@ export default class Model {
    */
   async cartItem(rawNameValues) {
     const nameValues = this._validate('cartItem', rawNameValues);
-    //@TODO
+    const sku = nameValues.sku;
+    const identifer = {
+      cartId: nameValues.cartId
+    };
+    const lastModified = Object.assign({}, { _lastModified: true });
+    const updateFields = Object.assign({}, {
+      [sku]: nameValues.nUnits
+    });
+    let result;
+
+    result = await this.shoppingCart.updateOne(identifer, {
+
+      $set: updateFields,
+      $currentDate: lastModified,
+    });
+    if (result.modifiedCount !== 1) {
+      const msg = `unknown sku ${sku}`;
+      throw [new ModelError('BAD_ID', msg, 'sku')];
+
+    }
   }
 
   /** Given fields { cartId } = nameValues, return cart identified by
@@ -170,7 +197,7 @@ export default class Model {
   async getCart(rawNameValues) {
     const nameValues = this._validate('getCart', rawNameValues);
     //@TODO
-    return {};
+    return await this.shoppingCart.find({}).toArray();
   }
 
   /** Given fields { isbn, title, authors, publisher, year, pages } =
