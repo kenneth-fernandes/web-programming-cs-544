@@ -166,7 +166,7 @@ export default class Model {
       const sku = nameValues.sku;
       const record = await this.findBooks({ 'isbn': sku });
       if (record.length === 0) {
-        console.log(record);
+        //console.log(record);
         const msg = `unknown sku ${sku}`;
         throw [new ModelError('BAD_ID', msg, 'sku')];
       }
@@ -184,8 +184,8 @@ export default class Model {
       });
 
       if (result.modifiedCount !== 1) {
-        const msg = `unknown sku ${sku}`;
-        throw [new ModelError('BAD_ID', msg, 'sku')];
+        const msg = `no updates for cart "${sku}"`;
+        throw [new ModelError('BAD_ID', msg, 'cartId')]
       }
     } catch (error) {
       throw error;
@@ -290,25 +290,46 @@ export default class Model {
 
 
       const srchQuery = operationKey['op'] === 'authorsTitleSearch' ?
-        Object.assign({}, { title: nameValues[operationKey.op] }) :
-        Object.assign({}, { isbn: nameValues[operationKey.op] });
+        Object.assign({}, {
 
+          $or: [
+            {
+              title:
+              {
+                $regex: new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')
+              }
+            },
+            {
+              authors:
+              {
+                $in: [new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')]
+              }
+
+            }
+          ]
+        }
+        ) :
+        Object.assign({}, {
+          isbn: {
+            $regex: new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')
+          }
+        });
 
       const count = nameValues.hasOwnProperty('_count') ?
         nameValues['_count'] : 5;
 
       const index = nameValues.hasOwnProperty('_index') ?
         nameValues['_index'] : 0;
-      const result = await this.bookCatalog.find({
-        [operationKey.key]:
-          { $regex: new RegExp(`\\b${srchQuery[operationKey.key]}\\b`) }
-      }).sort(['title'], 1).skip(index).limit(count).toArray();
+      const result = await this.bookCatalog.find(srchQuery,
+        {
+          projection:
+            { _id: 0 }
+        }).sort(['title'], 1).skip(index).limit(count).toArray();
 
       return result;
     }
     catch (error) {
-      const msg = `Error in finding book from book_catalog: "${error}"`;
-      throw [new ModelError('insert-addBook', msg)];
+      throw error;
     }
   }
 
