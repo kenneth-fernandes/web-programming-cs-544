@@ -160,30 +160,30 @@ export default class Model {
    *            sku does not specify the isbn of an existing book.
    */
   async cartItem(rawNameValues) {
-    const nameValues = this._validate('cartItem', rawNameValues);
-    const sku = nameValues.sku;
-    const identifer = {
-      cartId: nameValues.cartId
-    };
-    const lastModified = Object.assign({}, { _lastModified: true });
-    const updateFields = Object.assign({}, {
-      [sku]: nameValues.nUnits
-    });
     let result;
+    try {
+      const nameValues = this._validate('cartItem', rawNameValues);
+      const sku = nameValues.sku;
+      const identifer = {
+        cartId: nameValues.cartId
+      };
+      const lastModified = Object.assign({}, { _lastModified: true });
+      const updateFields = Object.assign({}, {
+        [sku]: nameValues.nUnits
+      });
 
-    result = await this.shoppingCart.updateOne(identifer, {
+      result = await this.shoppingCart.updateOne(identifer, {
+        $set: updateFields,
+        $currentDate: lastModified,
+      });
 
-      $set: updateFields,
-      $currentDate: lastModified,
-    });
-
-    if (result.modifiedCount !== 1) {
-      const msg = `unknown sku ${sku}`;
-      throw [new ModelError('BAD_ID', msg, 'sku')];
-
+      if (result.modifiedCount !== 1) {
+        const msg = `unknown sku ${sku}`;
+        throw [new ModelError('BAD_ID', msg, 'sku')];
+      }
+    } catch (error) {
+      throw error;
     }
-
-
   }
 
   /** Given fields { cartId } = nameValues, return cart identified by
@@ -198,12 +198,10 @@ export default class Model {
    *    BAD_ID: cartId does not reference a cart.
    */
   async getCart(rawNameValues) {
-
-    const nameValues = this._validate('getCart', rawNameValues);
-
-    const lastModified = Object.assign({}, { _lastModified: true });
     try {
+      const nameValues = this._validate('getCart', rawNameValues);
 
+      const lastModified = Object.assign({}, { _lastModified: true });
       const shoppingCartRes = await this.shoppingCart.find({}).toArray();
       await shoppingCartRes.forEach(async (element) => {
         for (const key in element) {
@@ -222,15 +220,18 @@ export default class Model {
 
       const results = await this.shoppingCart.findOne(
         nameValues, {
-          projection:
-            { _id: 0, cartId: 0 }
+        projection:
+          { _id: 0, cartId: 0 }
       });
 
+      if (!results) {
+        const msg = 'cartId does not reference a cart';
+        throw [new ModelError('BAD_ID', msg, 'cartId')];
+      }
       return results;
     }
     catch (error) {
-      const msg = `Error while retrieving record to shopping_cart ": ${error}`;
-      throw [new ModelError('retrieve-getCart', msg)];
+      throw error;
     }
 
   }
@@ -247,19 +248,20 @@ export default class Model {
    *  the current Date timestamp.
    */
   async addBook(rawNameValues) {
-    const nameValues = this._validate('addBook', rawNameValues);
-    const lastModified = Object.assign({}, { _lastModified: true });
-    const result = await this.bookCatalog.updateOne({ title: "" },
-      {
-        $set: nameValues,
-        $currentDate: lastModified,
-      }, { upsert: true });
-    //@TODO
-    // - Check all functions have try-catch
-    //
-    //console.log(await this.bookCatalog.find({}).toArray());
+    try {
+      const nameValues = this._validate('addBook', rawNameValues);
+      const lastModified = Object.assign({}, { _lastModified: true });
+      const result = await this.bookCatalog.updateOne({ title: "" },
+        {
+          $set: nameValues,
+          $currentDate: lastModified,
+        }, { upsert: true });
 
-    return result;
+      return result;
+    } catch (error) {
+      const msg = 'Error in adding book to book_catalog';
+        throw [new ModelError('insert-addBook', msg)];
+    }
   }
 
   /** Given fields { isbn, authorsTitle, _count=COUNT, _index=0 } =
