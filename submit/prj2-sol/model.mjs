@@ -278,22 +278,31 @@ export default class Model {
     try {
 
       const nameValues = this._validate('findBooks', rawNameValues);
-      const srchQuery = nameValues.hasOwnProperty('authorsTitleSearch') ?
-        Object.assign({}, { title: nameValues['authorsTitleSearch'] }) : undefined;
+
+      const operationKey = nameValues.hasOwnProperty('authorsTitleSearch')
+        ? Object.assign({}, { op: 'authorsTitleSearch', key: 'title' }) :
+        Object.assign({}, { op: 'isbn', key: 'isbn' });
+
+
+      const srchQuery = operationKey['op'] === 'authorsTitleSearch' ?
+        Object.assign({}, { title: nameValues[operationKey.op] }) :
+        Object.assign({}, { isbn: nameValues[operationKey.op] });
+
+
       const count = nameValues.hasOwnProperty('_count') ?
         nameValues['_count'] : 5;
 
       const index = nameValues.hasOwnProperty('_index') ?
         nameValues['_index'] : 0;
       const result = await this.bookCatalog.find({
-        title:
-          { $regex: new RegExp(`${srchQuery['title']}`) }
+        [operationKey.key]:
+          { $regex: new RegExp(`${srchQuery[operationKey.key]}`) }
       }).sort(['title'], 1).skip(index).limit(count).toArray();
-      console.log(nameValues);
+
       return result;
     }
     catch (error) {
-      const msg = `Error in adding book to book_catalog: "${error}"`;
+      const msg = `Error in finding book from book_catalog: "${error}"`;
       throw [new ModelError('insert-addBook', msg)];
     }
   }
