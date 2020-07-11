@@ -251,16 +251,15 @@ export default class Model {
     try {
       const nameValues = this._validate('addBook', rawNameValues);
       const lastModified = Object.assign({}, { _lastModified: true });
-      const result = await this.bookCatalog.updateOne({ title: "" },
+      const result = await this.bookCatalog.updateOne({ isbn: nameValues['isbn'] },
         {
           $set: nameValues,
           $currentDate: lastModified,
         }, { upsert: true });
-
-      return result;
+      return nameValues['isbn'];
     } catch (error) {
-      const msg = 'Error in adding book to book_catalog';
-        throw [new ModelError('insert-addBook', msg)];
+      const msg = `Error in adding book to book_catalog: "${error}"`;
+      throw [new ModelError('insert-addBook', msg)];
     }
   }
 
@@ -276,9 +275,27 @@ export default class Model {
    *  Will return [] if no books match the search criteria.
    */
   async findBooks(rawNameValues) {
-    const nameValues = this._validate('findBooks', rawNameValues);
-    //@TODO
-    return console.log(await this.bookCatalog.find({}).toArray());
+    try {
+
+      const nameValues = this._validate('findBooks', rawNameValues);
+      const srchQuery = nameValues.hasOwnProperty('authorsTitleSearch') ?
+        Object.assign({}, { title: nameValues['authorsTitleSearch'] }) : undefined;
+      const count = nameValues.hasOwnProperty('_count') ?
+        nameValues['_count'] : 5;
+
+      const index = nameValues.hasOwnProperty('_index') ?
+        nameValues['_index'] : 0;
+      const result = await this.bookCatalog.find({
+        title:
+          { $regex: new RegExp(`${srchQuery['title']}`) }
+      }).sort(['title'], 1).skip(index).limit(count).toArray();
+      console.log(nameValues);
+      return result;
+    }
+    catch (error) {
+      const msg = `Error in adding book to book_catalog: "${error}"`;
+      throw [new ModelError('insert-addBook', msg)];
+    }
   }
 
   //wrapper around this.validator to verify that no external field
