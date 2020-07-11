@@ -1,6 +1,31 @@
-Name:		Kenneth Peter Fernandes
+CS544: Project-2
+
+Name: Kenneth Peter Fernandes
 B-Number:	B00813852
 Email:		kferna11@binghamton.edu
 
-Add text here as needed.
+1. Description:
+- This project consists of CRUD operations on database.
+- The DB used is MongoDB.
+- Functions of mongoDB used are connect(), collection(), updateOne(), find(), findOne(), insertOne().
+
+2. External Materials:
+- JavaScript | MDN - https://developer.mozilla.org/en-US/docs/Web/JavaScript
+- Node.js MongoDB Query - https://www.w3schools.com/nodejs/nodejs_mongodb_query.asp
+- Queries - https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html
+- collection.find() - https://docs.mongodb.com/realm/mongodb/actions/collection.find/
+- db.collection.updateOne() - https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/#db-collection-updateone
+- Node.js MongoDB Update - https://www.w3schools.com/nodejs/nodejs_mongodb_update.asp
+
+3. Academic Honesty statement:
+
+---
+
+"I have done this assignment completely on my own. I have not copied
+it, nor have I given my solution to anyone else. I understand that if
+I am involved in plagiarism or cheating an official form will be
+submitted to the Academic Honesty Committee of the Watson School to
+determine the action that needs to be taken. "
+
+Date: [07/11/2020]
 
