@@ -26,10 +26,10 @@ async function go(cmd, options, args) {
     const results = await doCommand(model, cmd, options, args);
     if (results !== undefined && results !== null) {
       if (results.length !== undefined) {
-	console.log(JSON.stringify(results, null, 2));
+        console.log(JSON.stringify(results, null, 2));
       }
       else {
-	console.log(results);
+        console.log(results);
       }
     }
   }
@@ -54,7 +54,7 @@ function dataFilePath(args, argsMap) {
 }
 
 function namesArgs(args, argsMap) {
-  argsMap.names =  (args.length > 0) ? args : [];
+  argsMap.names = (args.length > 0) ? args : [];
   return [];
 }
 
@@ -80,7 +80,7 @@ async function nameValuesArgs(args, argsMap) {
     }
     else {
       if (value.startsWith('[') && value.endsWith(']')) {
-	value = value.slice(1, -1).split(/\s*;\s*/).map(s => s.trim());
+        value = value.slice(1, -1).split(/\s*;\s*/).map(s => s.trim());
       }
       nameValues[name] = value;
       n += 1;
@@ -95,7 +95,7 @@ async function findAndReadJson(dataDir, value) {
   if (fs.existsSync(value)) {
     path = value;
   }
-  else {    
+  else {
     path = Path.join(dataDir, value);
     if (!fs.existsSync(path)) {
       console.error(`cannot find file at path '${value}'`);
@@ -122,7 +122,7 @@ async function doCommand(model, command, options, args) {
 
 /** handler for add-book */
 async function addBookHandler(model, argsMap) {
-  const { nameValues} = argsMap;
+  const { nameValues } = argsMap;
   return await model.addBook(nameValues)
 }
 
@@ -134,8 +134,8 @@ async function clearHandler(model, argsMap) {
 
 /** handler for find-book command */
 async function findBooksHandler(model, argsMap) {
-  const {nameValues, names=[]} = argsMap;
-  const results = await model.findBooks( nameValues);
+  const { nameValues, names = [] } = argsMap;
+  const results = await model.findBooks(nameValues);
   if (names.length === 0) {
     return results;
   }
@@ -147,20 +147,20 @@ async function findBooksHandler(model, argsMap) {
 
 /** handler for new-cart */
 async function newCartHandler(model, argsMap) {
-  const { nameValues} = argsMap;
+  const { nameValues } = argsMap;
   return await model.newCart(nameValues)
 }
 
 
 /** handler for find-cart */
 async function getCartHandler(model, argsMap) {
-  const { nameValues} = argsMap;
+  const { nameValues } = argsMap;
   return await model.getCart(nameValues)
 }
 
 /** handler for cart-item */
 async function cartItemHandler(model, argsMap) {
-  const { nameValues} = argsMap;
+  const { nameValues } = argsMap;
   return await model.cartItem(nameValues)
 }
 
@@ -178,7 +178,7 @@ function helpHandler() { usage(); }
 
 /** command dispatch table and command help messages */
 const COMMANDS = {
-  clear: { 
+  clear: {
     msg: 'clear model database',
     argsDescr: '',
     args: [],
@@ -189,29 +189,29 @@ const COMMANDS = {
     argsDescr: '',
     args: [],
     handler: helpHandler,
-  },  
-  'new-cart': { 
+  },
+  'new-cart': {
     msg: 'create a new shopping cart, returning cart id',
     argsDescr: `NAME=VALUE...`,
-    args: [ nameValuesArgs, ],
+    args: [nameValuesArgs,],
     handler: newCartHandler,
   },
-  'get-cart': { 
+  'get-cart': {
     msg: 'find cart with specific cartId',
     argsDescr: `NAME=VALUE...`,
-    args: [ nameValuesArgs, ],
+    args: [nameValuesArgs,],
     handler: getCartHandler,
   },
   'cart-item': {
     msg: 'update/create/delete cart item',
     argsDescr: `NAME=VALUE...`,
-    args: [ nameValuesArgs, ],
+    args: [nameValuesArgs,],
     handler: cartItemHandler,
   },
   'add-book': {
     msg: 'create or update a book',
     argsDescr: `NAME=VALUE...`,
-    args: [ nameValuesArgs, ],
+    args: [nameValuesArgs,],
     handler: addBookHandler,
   },
   'find-books': {
@@ -219,13 +219,13 @@ const COMMANDS = {
     //argsDescr: `NAME=VALUE... NAME...`,
     //args: [ nameValuesArgs, namesArgs ],
     argsDescr: `NAME=VALUE...`,
-    args: [ nameValuesArgs, ],
+    args: [nameValuesArgs,],
     handler: findBooksHandler,
   },
   'load-books': {
     msg: 'load books in file at DATA_FILE_PATH into model',
     argsDescr: `DATA_FILE_PATH`,
-    args: [ dataFilePath, ],
+    args: [dataFilePath,],
     handler: loadBooksHandler,
   },
 };
@@ -246,7 +246,7 @@ async function readJson(jsonPath) {
   try {
     let text;
     if (jsonPath.endsWith('.gz')) {
-      const {stdout, stderr} = await exec(`zcat ${jsonPath}`);
+      const { stdout, stderr } = await exec(`zcat ${jsonPath}`);
       if (stderr) throw stderr;
       text = stdout.trim();
     }
@@ -256,7 +256,7 @@ async function readJson(jsonPath) {
     return JSON.parse(text);
   }
   catch (err) {
-    throw [ `cannot read ${jsonPath}: ${err}` ];
+    throw [`cannot read ${jsonPath}: ${err}`];
   }
 }
 
@@ -295,7 +295,7 @@ function getArgs(args) {
       const opt = arg;
       const option = OPTIONS[opt];
       if (!option) {
-	usage(`unknown option ${opt}`);
+        usage(`unknown option ${opt}`);
       }
       options[option] = true;
     }
@@ -303,7 +303,7 @@ function getArgs(args) {
   if (args.length - i < 2) { //minimally mongoUrl COMMAND
     usage();
   }
-  const [ mongoUrl, cmd, ...rest ] = args.slice(i);
+  const [mongoUrl, cmd, ...rest] = args.slice(i);
   if (!mongoUrl.startsWith('mongodb://')) {
     usage(`bad mongo url ${mongoUrl}`);
   }
