@@ -301,7 +301,7 @@ export default class Model {
         nameValues['_index'] : 0;
       const result = await this.bookCatalog.find({
         [operationKey.key]:
-          { $regex: new RegExp(`${srchQuery[operationKey.key]}`) }
+          { $regex: new RegExp(`\\b${srchQuery[operationKey.key]}\\b`) }
       }).sort(['title'], 1).skip(index).limit(count).toArray();
 
       return result;
