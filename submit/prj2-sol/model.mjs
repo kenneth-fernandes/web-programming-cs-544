@@ -143,7 +143,7 @@ export default class Model {
     //@TODO
     try {
 
-      await this.shoppingCart.insertOne({ cartId: cartId });
+      await this.shoppingCart.insertOne({ cartId: cartId, _lastModified: new Date() });
     } catch (error) {
       const msg = `Error while adding record to shopping_cart ": ${error}`;
       throw [new ModelError('insert-newCart', msg)];
@@ -164,6 +164,12 @@ export default class Model {
     try {
       const nameValues = this._validate('cartItem', rawNameValues);
       const sku = nameValues.sku;
+      const record = await this.findBooks({ 'isbn': sku });
+      if (record.length === 0) {
+        console.log(record);
+        const msg = `unknown sku ${sku}`;
+        throw [new ModelError('BAD_ID', msg, 'sku')];
+      }
       const identifer = {
         cartId: nameValues.cartId
       };
@@ -276,7 +282,6 @@ export default class Model {
    */
   async findBooks(rawNameValues) {
     try {
-
       const nameValues = this._validate('findBooks', rawNameValues);
 
       const operationKey = nameValues.hasOwnProperty('authorsTitleSearch')
