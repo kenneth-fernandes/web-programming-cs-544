@@ -1,21 +1,13 @@
-# i544
-# CS544: Project-1
+# i544-CS544: Programming for the web.
 
 ## Name: Kenneth Peter Fernandes
 ## B-Number:	B00813852
 ## Email:		kferna11@binghamton.edu
 
 ## Description:
-- This project consist of a web-application that consists of four form applications.
-- Each form has various types of input elements like text, radio buttons, checkbox, drop-down, multiple select inputs.
-- There are 3 files for the project working in submit/prj1-sol/src/ folder - index.js, meta.js, style.css.
-- index.js - Consists of JavaScript and jQuery code for building the web page and adding event listeners for form validation.
-- meta.js - Consists of the data from which HTML tags and validation of the fields are extracted.
-- style.css - Consists of CSS for the application to make it look presentable.
-- NOTE: I HAVE USED ONE LATE DAY FOR THIS PROJECT.
-
-### External Materials:
-- JavaScript | MDN - https://developer.mozilla.org/en-US/docs/Web/JavaScript
+- Project-1 - This project consist of a web-application that consists of four form applications using jQuery, JavaScript.
+- Project-2 - This project consists of CRUD operations on mongoDB database with the help of JavaScript.
+- NOTE: README for each project is present in their respective folders.
 
 ### Academic Honesty statement:
 
@@ -28,5 +20,6 @@ submitted to the Academic Honesty Committee of the Watson School to
 determine the action that needs to be taken. "
 
 Date: [07/12/2020]
+
 
 
