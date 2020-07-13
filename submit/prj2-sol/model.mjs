@@ -164,9 +164,12 @@ export default class Model {
     try {
       const nameValues = this._validate('cartItem', rawNameValues);
       const sku = nameValues.sku;
-      const record = await this.findBooks({ 'isbn': sku });
+      const record = await this.findBooks({
+        'isbn': sku
+      });
       if (record.length === 0) {
-        //console.log(record);
+
+
         const msg = `unknown sku ${sku}`;
         throw [new ModelError('BAD_ID', msg, 'sku')];
       }
@@ -184,7 +187,7 @@ export default class Model {
       });
 
       if (result.modifiedCount !== 1) {
-        const msg = `no updates for cart "${sku}"`;
+        const msg = `no updates for cart "${nameValues.cartId}"`;
         throw [new ModelError('BAD_ID', msg, 'cartId')]
       }
     } catch (error) {
@@ -285,35 +288,22 @@ export default class Model {
       const nameValues = this._validate('findBooks', rawNameValues);
 
       const operationKey = nameValues.hasOwnProperty('authorsTitleSearch')
-        ? Object.assign({}, { op: 'authorsTitleSearch', key: 'title' }) :
-        Object.assign({}, { op: 'isbn', key: 'isbn' });
+        ? 'authorsTitleSearch' : 'isbn';
+      const indexObj =
+      {
+        authors: 'text', title: 'text'
+      };
+      await this.bookCatalog.createIndex(indexObj);
 
-
-      const srchQuery = operationKey['op'] === 'authorsTitleSearch' ?
-        Object.assign({}, {
-
-          $or: [
-            {
-              title:
-              {
-                $regex: new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')
-              }
-            },
-            {
-              authors:
-              {
-                $in: [new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')]
-              }
-
-            }
-          ]
-        }
-        ) :
-        Object.assign({}, {
-          isbn: {
-            $regex: new RegExp(`\\b${nameValues[operationKey.op]}\\b`, 'i')
+      const srchQuery = nameValues.hasOwnProperty('authorsTitleSearch') ?
+        {
+          '$text': {
+            '$search': nameValues[operationKey]
           }
-        });
+        } :
+        {
+          isbn: nameValues[operationKey]
+        };
 
       const count = nameValues.hasOwnProperty('_count') ?
         nameValues['_count'] : 5;
