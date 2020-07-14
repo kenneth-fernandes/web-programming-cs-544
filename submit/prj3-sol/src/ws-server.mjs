@@ -66,7 +66,9 @@ function doBase(app) {
   return function(req, res) { 
     try {
       const links = [
-	{ rel: 'self', name: 'self', href: req.selfUrl, },
+  { rel: 'self', name: 'self', href: req.selfUrl, },
+  { rel: 'collection', name: 'books', href: req.selfUrl.concat('/books'), },
+  { rel: 'collection', name: 'carts', href: req.selfUrl.concat('/carts'), },
 	//@TODO add links for book and cart collections
       ];
       res.json({ links });
