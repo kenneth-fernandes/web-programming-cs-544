@@ -68,10 +68,12 @@ async function go(args) {
       process.exit(1);
     }
     const model = await Model.make(args[1]);
+    
     if (args.length > 2) {
       await model.clear();  //clears books and carts
       await loadData(model, args.slice(2));
     }
+    
     serve(port, meta, model);
   }
   catch (err) {

@@ -16,6 +16,7 @@ const CONFLICT = 409;
 const SERVER_ERROR = 500;
 
 const BASE = 'api';
+const CARTS = 'carts'
 
 export default function serve(port, meta, model) {
   const app = express();
@@ -23,7 +24,7 @@ export default function serve(port, meta, model) {
   app.locals.meta = meta;
   app.locals.model = model;
   setupRoutes(app);
-  app.listen(port, function() {
+  app.listen(port, function () {
     console.log(`listening on port ${port}`);
   });
 }
@@ -37,6 +38,7 @@ function setupRoutes(app) {
 
   //application routes
   app.get(`/${BASE}`, doBase(app));
+  app.post(`/${BASE}/${CARTS}`, doCreate(app));
   //@TODO: add other application routes
 
   //must be last
@@ -63,13 +65,13 @@ function reqBaseUrl(req, res, next) {
 }
 
 function doBase(app) {
-  return function(req, res) { 
+  return function (req, res) {
     try {
       const links = [
-  { rel: 'self', name: 'self', href: req.selfUrl, },
-  { rel: 'collection', name: 'books', href: req.selfUrl.concat('/books'), },
-  { rel: 'collection', name: 'carts', href: req.selfUrl.concat('/carts'), },
-	//@TODO add links for book and cart collections
+        { rel: 'self', name: 'self', href: req.selfUrl, },
+        { rel: 'collection', name: 'books', href: req.selfUrl.concat('/books'), },
+        { rel: 'collection', name: 'carts', href: req.selfUrl.concat('/carts'), },
+        //@TODO add links for book and cart collections
       ];
       res.json({ links });
     }
@@ -80,36 +82,64 @@ function doBase(app) {
   };
 }
 
+
 //@TODO: Add handlers for other application routes
+function doCreate(app) {
+  return errorWrap(async function (req, res) {
+    try {
+      const inputFields = app.locals.meta.newCart.fields;
+      const cartId = await app.locals.model.newCart(inputFields);
+      res.append('Location', req.selfUrl.concat(`/${cartId}`));
+      res.status(CREATED).end();
+    } catch (err) {
+      const mapped = mapError(err);
+      res.status(mapped.status).json(mapped);
+    }
+  });
+}
 
 /** Default handler for when there is no route for a particular method
  *  and path.
  */
 function do404(app) {
-  return async function(req, res) {
+  return async function (req, res) {
     const message = `${req.method} not supported for ${req.originalUrl}`;
     const result = {
       status: NOT_FOUND,
-      errors: [	{ code: 'NOT_FOUND', message, }, ],
+      errors: [{ code: 'NOT_FOUND', message, },],
     };
     res.type('text').
-	status(404).
-	json(result);
+      status(404).
+      json(result);
   };
 }
 
 
 /** Ensures a server error results in nice JSON sent back to client
  *  with details logged on console.
- */ 
+ */
 function doErrors(app) {
-  return async function(err, req, res, next) {
+  return async function (err, req, res, next) {
     const result = {
       status: SERVER_ERROR,
-      errors: [ { code: 'SERVER_ERROR', message: err.message } ],
+      errors: [{ code: 'SERVER_ERROR', message: err.message }],
     };
     res.status(SERVER_ERROR).json(result);
     console.error(err);
+  };
+}
+
+/** Set up error handling for handler by wrapping it in a 
+ *  try-catch with chaining to error handler on error.
+ */
+function errorWrap(handler) {
+  return async (req, res, next) => {
+    try {
+      await handler(req, res, next);
+    }
+    catch (err) {
+      next(err);
+    }
   };
 }
 
@@ -131,14 +161,13 @@ function mapError(err) {
   const status =
     isDomainError ? (ERROR_MAP[err[0].code] || BAD_REQUEST) : SERVER_ERROR;
   const errors =
-	isDomainError
-	? err.map(e => ({ code: e.code, message: e.message, name: e.name }))
-        : [ { code: 'SERVER_ERROR', message: err.toString(), } ];
+    isDomainError
+      ? err.map(e => ({ code: e.code, message: e.message, name: e.name }))
+      : [{ code: 'SERVER_ERROR', message: err.toString(), }];
   if (!isDomainError) console.error(err);
   return { status, errors };
-} 
+}
 
 /****************************** Utilities ******************************/
-
 
 
