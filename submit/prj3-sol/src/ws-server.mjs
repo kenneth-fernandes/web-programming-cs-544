@@ -17,7 +17,9 @@ const SERVER_ERROR = 500;
 
 const BASE = 'api';
 const CARTS = 'carts';
+const BOOKS = 'books';
 const CART_ID = 'cartId';
+const ISBN = 'isbn';
 
 export default function serve(port, meta, model) {
   const app = express();
@@ -40,9 +42,10 @@ function setupRoutes(app) {
   //application routes
   //@TODO: add other application routes
   app.get(`/${BASE}`, doBase(app));
+  app.get(`/${BASE}/${BOOKS}/:${ISBN}`, doGet(app));
   app.post(`/${BASE}/${CARTS}`, doCreate(app));
   app.patch(`/${BASE}/${CARTS}/:${CART_ID}`, doUpdate(app));
-  
+
 
   //must be last
   app.use(do404(app));
@@ -89,6 +92,30 @@ function doBase(app) {
 //@TODO: Add handlers for other application routes
 
 //REQUIRED COMMENT
+function doGet(app) {
+  return errorWrap(async function (req, res) {
+    try {
+      const isbn = req.params.isbn;
+      const results = await app.locals.model.findBooks({ isbn: isbn });
+      if (results.length === 0) {
+        const message = `Book with isbn ${isbn} not found`;
+        throw {
+          status: NOT_FOUND,
+          errors: [{ code: 'NOT_FOUND', message, },],
+        }
+      } else {
+        const links = [{ href: req.selfUrl, name: 'self', rel: 'self' },];
+        const result = { links: links, result: results[0] };
+        res.json(result);
+      }
+    } catch (err) {
+      const mapped = mapError(err);
+      res.status(mapped.status).json(mapped);
+    }
+  });
+}
+
+//REQUIRED COMMENT
 function doCreate(app) {
   return errorWrap(async function (req, res) {
     try {
@@ -107,7 +134,7 @@ function doCreate(app) {
 function doUpdate(app) {
   return errorWrap(async function (req, res) {
     try {
-      const patch = Object.assign({}, req.body, );
+      const patch = Object.assign({}, req.body,);
       patch.cartId = req.params.cartId;
       const results = await app.locals.model.cartItem(patch);
       res.status(NO_CONTENT).end();
