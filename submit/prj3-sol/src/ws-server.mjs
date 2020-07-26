@@ -16,7 +16,8 @@ const CONFLICT = 409;
 const SERVER_ERROR = 500;
 
 const BASE = 'api';
-const CARTS = 'carts'
+const CARTS = 'carts';
+const CART_ID = 'cartId';
 
 export default function serve(port, meta, model) {
   const app = express();
@@ -37,9 +38,11 @@ function setupRoutes(app) {
   app.use(reqSelfUrl, reqBaseUrl); //set useful properties in req
 
   //application routes
+  //@TODO: add other application routes
   app.get(`/${BASE}`, doBase(app));
   app.post(`/${BASE}/${CARTS}`, doCreate(app));
-  //@TODO: add other application routes
+  app.patch(`/${BASE}/${CARTS}/:${CART_ID}`, doUpdate(app));
+  
 
   //must be last
   app.use(do404(app));
@@ -84,6 +87,8 @@ function doBase(app) {
 
 
 //@TODO: Add handlers for other application routes
+
+//REQUIRED COMMENT
 function doCreate(app) {
   return errorWrap(async function (req, res) {
     try {
@@ -91,6 +96,21 @@ function doCreate(app) {
       const cartId = await app.locals.model.newCart(inputFields);
       res.append('Location', req.selfUrl.concat(`/${cartId}`));
       res.status(CREATED).end();
+    } catch (err) {
+      const mapped = mapError(err);
+      res.status(mapped.status).json(mapped);
+    }
+  });
+}
+
+//REQUIRED COMMENT
+function doUpdate(app) {
+  return errorWrap(async function (req, res) {
+    try {
+      const patch = Object.assign({}, req.body, );
+      patch.cartId = req.params.cartId;
+      const results = await app.locals.model.cartItem(patch);
+      res.status(NO_CONTENT).end();
     } catch (err) {
       const mapped = mapError(err);
       res.status(mapped.status).json(mapped);
