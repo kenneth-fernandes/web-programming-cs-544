@@ -6,7 +6,11 @@
 
 ## Description:
 - Project-1 - This project consist of a web-application that consists of four form applications using jQuery, JavaScript.
+
 - Project-2 - This project consists of CRUD operations on mongoDB database with the help of JavaScript.
+
+- Project-3 - The project consist designing and implementing REST Web Services with the help of express.js and mongoDb.
+
 - NOTE: README for each project is present in their respective folders.
 
 ### Academic Honesty statement:
@@ -19,7 +23,7 @@ I am involved in plagiarism or cheating an official form will be
 submitted to the Academic Honesty Committee of the Watson School to
 determine the action that needs to be taken. "
 
-Date: [07/12/2020]
+Date: [07/27/2020]
 
 
 
