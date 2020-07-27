@@ -42,6 +42,7 @@ function setupRoutes(app) {
   //application routes
   //@TODO: add other application routes
   app.get(`/${BASE}`, doBase(app));
+  app.get(`/${BASE}/${BOOKS}`, doGetBooksByQryPrms(app));
   app.get(`/${BASE}/${BOOKS}/:${ISBN}`, doGetBookById(app));
   app.post(`/${BASE}/${CARTS}`, doCreate(app));
   app.route(`/${BASE}/${CARTS}/:${CART_ID}`)
@@ -111,6 +112,81 @@ function doGetBookById(app) {
         const result = { links: links, result: results[0] };
         res.json(result);
       }
+    } catch (err) {
+      const mapped = mapError(err);
+      res.status(mapped.status).json(mapped);
+    }
+  });
+}
+
+function doGetBooksByQryPrms(app) {
+  return errorWrap(async function (req, res) {
+    try {
+      const srchTerm = req.query.authorsTitleSearch;
+      const _index = parseInt(req.query._index || 0);
+      const _count = parseInt(req.query._count || 5);
+      const preResults = await app.locals.model.findBooks(
+        {
+          authorsTitleSearch: srchTerm,
+          _count: 3000,
+          _index: 0
+        });
+
+      const links = [{ href: req.selfUrl, name: 'self', rel: 'self' }];
+
+      const startIndex = _index;
+      const endIndex = startIndex + _count - 1;
+
+
+      if (endIndex > -1 && endIndex <
+        preResults.length - 1 &&
+        preResults.length > 0) {
+        const srchQuery = `?authorsTitleSearch=${srchTerm}`;
+        const indexQuery = endIndex > -1 && endIndex < preResults.length ?
+          `&_index=${_index + _count}` : '';
+        const countQuery = req.query._count ? `&_count=${_count}` : '';
+        links.push({
+          href: req.baseUrl.concat(`/${BOOKS}`
+            + srchQuery
+            + indexQuery
+            + countQuery),
+          name: 'next',
+          rel: 'next'
+        });
+      }
+
+
+      if (startIndex > 0 && preResults.length > 0) {
+        const srchQuery = `?authorsTitleSearch=${srchTerm}`;
+        const indexQuery = req.query._index ? `&_index=${_index - _count}` : '';
+        const countQuery = req.query._count ? `&_count=${_count}` : '';
+        links.push({
+          href: req.baseUrl.concat(`/${BOOKS}`
+            + srchQuery
+            + indexQuery
+            + countQuery),
+          name: 'prev',
+          rel: 'prev'
+        });
+      }
+
+
+
+      const results = await app.locals.model.findBooks(req.query);
+      const bookResults = [];
+      results.forEach(element => {
+        const bookLinks = [{
+          href: req.baseUrl.concat(`/${BOOKS}/${element.isbn}`),
+          name: 'book',
+          rel: 'details',
+        }];
+        element.links = bookLinks;
+        bookResults.push(element);
+      });
+      const finalResult = { links: links, result: bookResults };
+
+      res.json(finalResult);
+
     } catch (err) {
       const mapped = mapError(err);
       res.status(mapped.status).json(mapped);
