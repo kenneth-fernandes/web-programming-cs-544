@@ -42,9 +42,12 @@ function setupRoutes(app) {
   //application routes
   //@TODO: add other application routes
   app.get(`/${BASE}`, doBase(app));
-  app.get(`/${BASE}/${BOOKS}/:${ISBN}`, doGet(app));
+  app.get(`/${BASE}/${BOOKS}/:${ISBN}`, doGetBookById(app));
   app.post(`/${BASE}/${CARTS}`, doCreate(app));
-  app.patch(`/${BASE}/${CARTS}/:${CART_ID}`, doUpdate(app));
+  app.route(`/${BASE}/${CARTS}/:${CART_ID}`)
+    .get(doGetCartById(app))
+    .patch(doUpdate(app));
+
 
 
   //must be last
@@ -92,7 +95,7 @@ function doBase(app) {
 //@TODO: Add handlers for other application routes
 
 //REQUIRED COMMENT
-function doGet(app) {
+function doGetBookById(app) {
   return errorWrap(async function (req, res) {
     try {
       const isbn = req.params.isbn;
@@ -111,6 +114,51 @@ function doGet(app) {
     } catch (err) {
       const mapped = mapError(err);
       res.status(mapped.status).json(mapped);
+    }
+  });
+}
+
+function doGetCartById(app) {
+  return errorWrap(async function (req, res) {
+    try {
+      const cartId = req.params.cartId;
+      const results = await app.locals.model.getCart({ cartId: cartId });
+      if (results.length === 0) {
+        const message = `Cart with cart-id ${cartId} not found`;
+        throw {
+          status: NOT_FOUND,
+          errors: [{ code: 'NOT_FOUND', message, },],
+        }
+      } else {
+        const cartLinks = [{ href: req.selfUrl, name: 'self', rel: 'self' },];
+
+        const lastModified = results['_lastModified'];
+        delete results['_lastModified'];
+        const booksResults = [];
+        for (const sku in results) {
+          if (results.hasOwnProperty(sku)) {
+            const bookLinks = [{
+              href: req.baseUrl.concat(`/${BOOKS}/${sku}`),
+              name: 'book',
+              rel: 'item',
+            }];
+            booksResults.push({
+              links: bookLinks,
+              sku: sku,
+              nUnits: results[sku]
+            });
+          }
+        }
+        const finalResult = {
+          _lastModified: lastModified,
+          links: cartLinks,
+          result: booksResults,
+        };
+        res.json(finalResult);
+      }
+    } catch (err) {
+      const mapped = mapError(err);
+      res.status(mapped.status).json(mapped)
     }
   });
 }
