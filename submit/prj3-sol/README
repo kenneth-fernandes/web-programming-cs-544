@@ -1,6 +1,29 @@
-Name:		Kenneth Peter Fernandes
-B-Number:	B00813852
-Email:		kferna11binghamton.edu
+CS544: Project-3
 
-Add text here as needed.
+Name: Kenneth Peter Fernandes
+B-Number:	B00813852
+Email:		kferna11@binghamton.edu
+
+1. Description:
+- The project consist designing and implementing REST Web Services with the help of express.js.
+- Web services is used to make CRUD operation to database in mongoDb.
+
+2. External Materials:
+- JavaScript | MDN - https://developer.mozilla.org/en-US/docs/Web/JavaScript
+- Express JS | 4.x API Documentation - https://expressjs.com/en/4x/api.html
+- NOTE: I am using 3 late day for this project. Revised date of submission : 07/24/2020
+
+[TESTING IN PROGRESS]
+
+3. Academic Honesty statement:
+
+---
+
+"I have done this assignment completely on my own. I have not copied
+it, nor have I given my solution to anyone else. I understand that if
+I am involved in plagiarism or cheating an official form will be
+submitted to the Academic Honesty Committee of the Watson School to
+determine the action that needs to be taken. "
+
+Date: [07/27/2020]
 
