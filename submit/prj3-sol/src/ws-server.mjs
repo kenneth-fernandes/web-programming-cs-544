@@ -102,11 +102,8 @@ function doGetBookById(app) {
       const isbn = req.params.isbn;
       const results = await app.locals.model.findBooks({ isbn: isbn });
       if (results.length === 0) {
-        const message = `Book with isbn ${isbn} not found`;
-        throw {
-          status: NOT_FOUND,
-          errors: [{ code: 'NOT_FOUND', message, },],
-        }
+        const message = `no book for isbn ${isbn}`;
+        throw [new ModelError('BAD_ID', message, 'isbn'),];
       } else {
         const links = [{ href: req.selfUrl, name: 'self', rel: 'self' },];
         const result = { links: links, result: results[0] };
