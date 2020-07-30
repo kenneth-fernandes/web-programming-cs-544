@@ -2,7 +2,7 @@
 const STORE = window.sessionStorage;
 
 export default class Cache {
-  constructor(store=STORE) {
+  constructor(store = STORE) {
     this.store = store;
   }
 
@@ -10,15 +10,16 @@ export default class Cache {
    *  returns falsy if not found. 
    */
   get(key) {
-    //@TODO
+    const item = this.store.getItem(key);
+    return JSON.parse(item);
   }
 
   /** cache object val under key in this cache.  
    *  returns this to allow chaining.
    */
   set(key, val) {
-    //@TODO
+    this.store.setItem(key, JSON.stringify(val));
     return this;
   }
-  
+
 }
