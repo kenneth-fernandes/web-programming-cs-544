@@ -6,25 +6,59 @@ export default class Books extends React.Component {
 
   constructor(props) {
     super(props);
-    //console.log(props,'',this);
     //@TODO other initialization
-    this.onBlur = this.onBlur.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    this.state = { result: '' };
   }
 
   //@TODO other methods
-  onBlur(event) {
-    
+  recordSrchResult(result) {
+    this.setState({ result: result });
   }
 
-  onSubmit(event) {
-    
+  render() {
+    //@TODO complete rendering
+    const app = this.props.app;
+    const books = this;
+    const element = <SearchForm key="search" app={app} books={books} />;
+    return element;
+  }
+
+}
+
+class SearchForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { srchTerm: '' };
+    this.onBlur = this.onBlur.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+
+  }
+
+  async onBlur(event) {
+    const elem = event.target;
+    await this.performSrch(elem);
+  }
+
+  async onSubmit(event) {
+    event.preventDefault();
+    const elem = event.target.querySelector('#search');
+    await this.performSrch(elem);
+
+  }
+
+  async performSrch(srchInputElem) {
+    const elemVal = srchInputElem ? srchInputElem.value.trim() : '';
+    if (elemVal && elemVal !== this.state.srchTerm) {
+      this.setState({ srchTerm: elemVal, });
+      const { result, links } = await this.props.app.ws.findBooks(elemVal);
+      await this.props.books.recordSrchResult(result);
+    }
   }
 
   render() {
     //@TODO complete rendering
     const element = (
-      <form className="search">
+      <form className="search" onSubmit={this.onSubmit}>
         <label htmlFor="search">
           Search Catalog
         </label>
@@ -32,7 +66,6 @@ export default class Books extends React.Component {
       </form>);
     return element;
   }
-
 }
 
 export function Book({ book, full }) {
