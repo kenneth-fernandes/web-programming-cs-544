@@ -7,12 +7,18 @@ export default class Books extends React.Component {
   constructor(props) {
     super(props);
     //@TODO other initialization
-    this.state = { result: [] };
+    this.state = { result: '' };
+    this.performResNavigation = this.performResNavigation.bind(this);
   }
 
   //@TODO other methods
-  recordSrchResult(result) {
-    this.setState({ result: result });
+  async recordSrchResult(result) {
+    await this.setState({ result: result });
+  }
+
+  async performResNavigation(url) {
+    const result = await this.props.app.ws.get(url);
+    await this.recordSrchResult(result);
   }
 
   render() {
@@ -21,7 +27,9 @@ export default class Books extends React.Component {
     const books = this;
     const srchFrmComponent = <SearchForm key="search" app={app} books={books} />;
     const resultsComponent = <Results key="results" app={app} result={this.state.result} />;
-    return <div className="Books">{[srchFrmComponent, resultsComponent]}</div>;
+    const prevScrollComponent = <Scroll key="prev" result={this.state.result} resNav={this.performResNavigation} dir="prev" />;
+    const nextScrollComponent = <Scroll key="next" result={this.state.result} resNav={this.performResNavigation} dir="next" />;
+    return <div className="Books">{[srchFrmComponent, resultsComponent, prevScrollComponent, nextScrollComponent]}</div>;
   }
 
 }
@@ -51,7 +59,8 @@ class SearchForm extends React.Component {
     const elemVal = srchInputElem ? srchInputElem.value.trim() : '';
     if (elemVal && elemVal !== this.state.srchTerm) {
       this.setState({ srchTerm: elemVal, });
-      const { result, links } = await this.props.app.ws.findBooks(elemVal);
+      const result = await this.props.app.ws.findBooks(elemVal);
+
       await this.props.books.recordSrchResult(result);
     }
   }
@@ -75,7 +84,9 @@ class Results extends React.Component {
 
   render() {
     const { app, result } = this.props;
-    const components = result.map(
+    const items = result ? result.result : Array.from({ length: 0 });
+
+    const components = items ? items.map(
       function (element, index) {
         return <div className="result" key={index}>
           <Book book={element} full={true} />
@@ -83,9 +94,24 @@ class Results extends React.Component {
             <button onClick={() => app.buy(element)}>Buy</button>
           </div>
         </div>;
-      });
+      }) : '';
     return components;
   }
+}
+function Scroll({ result, resNav, dir }) {
+  const link = result ? result.links.filter(
+    function (item) {
+      return item.rel === dir
+    })[0] : '';
+  return link
+    ? <span className="scroll">
+      <a href="#" rel={dir} onClick={(event) => {
+        event.preventDefault();
+        resNav(link.href);
+      }}>{SCROLLS[dir]}</a>
+    </span>
+    : '';
+
 }
 export function Book({ book, full }) {
   //@TODO return rendering of book based on full
