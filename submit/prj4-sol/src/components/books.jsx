@@ -7,7 +7,7 @@ export default class Books extends React.Component {
   constructor(props) {
     super(props);
     //@TODO other initialization
-    this.state = { result: '' };
+    this.state = { result: [] };
   }
 
   //@TODO other methods
@@ -19,8 +19,9 @@ export default class Books extends React.Component {
     //@TODO complete rendering
     const app = this.props.app;
     const books = this;
-    const element = <SearchForm key="search" app={app} books={books} />;
-    return element;
+    const srchFrmComponent = <SearchForm key="search" app={app} books={books} />;
+    const resultsComponent = <Results key="results" app={app} result={this.state.result} />;
+    return <div className="Books">{[srchFrmComponent, resultsComponent]}</div>;
   }
 
 }
@@ -67,10 +68,50 @@ class SearchForm extends React.Component {
     return element;
   }
 }
+class Results extends React.Component {
+  constructor(props) {
+    super(props);
+  }
 
+  render() {
+    const { app, result } = this.props;
+    const components = result.map(
+      function (element, index) {
+        return <div className="result" key={index}>
+          <Book book={element} full={true} />
+          <div className="buy">
+            <button onClick={() => app.buy(element)}>Buy</button>
+          </div>
+        </div>;
+      });
+    return components;
+  }
+}
 export function Book({ book, full }) {
   //@TODO return rendering of book based on full
-  return '';
+  const namesArr = book['authors'].map(function (item) {
+    const nameArr = item.split(',');
+    return nameArr[1].trim().concat(" ".concat(nameArr[0].trim()));
+  });
+  const { title, isbn, publisher, year, pages } = book;
+  const authors = namesArr.slice(0, namesArr.length - 1).join(', ')
+    + ' and '
+    + namesArr.slice(-1);
+  const element = full ?
+    (<div className="book">
+      <span className="title">{title}</span>
+      <span className="authors">{authors}</span>
+      <span className="isbn"><label>ISBN:</label>{isbn}</span>
+      <span className="publisher">{publisher}</span>
+      <span key="year" className="year">{year}, </span>
+      <span className="pages">{pages} pages</span>
+    </div>) :
+    (<div className="book">
+      <span className="title">{title}</span>
+      <span className="authors">{authors}</span>
+    </div>);
+
+  return element;
 }
 
 //@TODO other components like SearchForm, Results, etc.
