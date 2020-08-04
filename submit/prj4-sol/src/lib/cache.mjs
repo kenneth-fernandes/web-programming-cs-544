@@ -11,7 +11,7 @@ export default class Cache {
    */
   get(key) {
     const item = this.store.getItem(key);
-    return JSON.parse(item);
+    return item ? JSON.parse(item) : false;
   }
 
   /** cache object val under key in this cache.  
