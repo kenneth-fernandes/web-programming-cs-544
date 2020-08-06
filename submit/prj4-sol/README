@@ -1,6 +1,29 @@
+CS544: Project-4
+
 Name:		Kenneth Peter Fernandes
 B-Number:	B00813852
 Email:		kferna11@binghamton.edu
 
-Add text here as needed.
+1. Description:
+- The project consist designing and implement the web components for a Single page application using ReactJS.
+- The application is connected to Web Services through which we can operate on the database.
+
+2. External Materials:
+- JavaScript | MDN - https://developer.mozilla.org/en-US/docs/Web/JavaScript
+- Handling Events | React JS - https://reactjs.org/docs/handling-events.html
+- Window.localStorage | JavaScript MDN - https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+- Window.sessionStorage | JavaScript MDN - https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
+- State and Lifecycle | React JS - https://reactjs.org/docs/state-and-lifecycle.html
+
+3. Academic Honesty statement:
+
+---
+
+"I have done this assignment completely on my own. I have not copied
+it, nor have I given my solution to anyone else. I understand that if
+I am involved in plagiarism or cheating an official form will be
+submitted to the Academic Honesty Committee of the Watson School to
+determine the action that needs to be taken. "
+
+Date: [08/06/2020]
 

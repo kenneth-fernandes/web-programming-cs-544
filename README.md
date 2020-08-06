@@ -11,6 +11,8 @@
 
 - Project-3 - The project consist designing and implementing REST Web Services with the help of express.js and mongoDb.
 
+- Project-4 - The project consist designing and implementing front end for the single page application using ReactJS.
+
 - NOTE: README for each project is present in their respective folders.
 
 ### Academic Honesty statement:
@@ -23,7 +25,7 @@ I am involved in plagiarism or cheating an official form will be
 submitted to the Academic Honesty Committee of the Watson School to
 determine the action that needs to be taken. "
 
-Date: [07/27/2020]
+Date: [08/06/2020]
 
 
 
