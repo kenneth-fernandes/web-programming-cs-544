@@ -1,8 +1,6 @@
 # CS544: Programming for the web.
 
 ## Name: Kenneth Peter Fernandes
-## B-Number:	B00813852
-## Email:		kferna11@binghamton.edu
 
 ## Description:
 - Project-1 - This project consist of a web-application that consists of four form applications using jQuery, JavaScript.
