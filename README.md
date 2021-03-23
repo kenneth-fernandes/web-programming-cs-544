@@ -1,4 +1,4 @@
-# i544-CS544: Programming for the web.
+# CS544: Programming for the web.
 
 ## Name: Kenneth Peter Fernandes
 ## B-Number:	B00813852
